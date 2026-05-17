@@ -26,6 +26,11 @@ table "users" {
     null = true
   }
 
+  column "city" {
+    type = varchar(100)
+    null = true
+  }
+
   primary_key {
     columns = [column.id]
   }
