@@ -85,31 +85,30 @@ pipeline {
         }
 
         stage('Verify DB Connection') {
-    steps {
-        sh '''
-            echo "Checking PostgreSQL readiness..."
+            steps {
+                sh '''
+                    echo "Checking PostgreSQL readiness..."
 
-            until pg_isready -h localhost -p 5432
-            do
-                echo "Waiting for PostgreSQL..."
-                sleep 2
-            done
+                    until pg_isready -h localhost -p 5432
+                    do
+                        echo "Waiting for PostgreSQL..."
+                        sleep 2
+                    done
 
-            PGPASSWORD=postgres psql \
-            -h localhost \
-            -U postgres \
-            -d testdb \
-            -c "\\l"
-        '''
-    }
-}
+                    PGPASSWORD=postgres psql \
+                        -h localhost \
+                        -U postgres \
+                        -d testdb \
+                        -c "\\l"
+                '''
+            }
+        }
 
         stage('Download Atlas CLI') {
             steps {
                 sh '''
                     wget -q ${ATLAS_URL} -O atlas
                     chmod +x atlas
-
                     ./atlas version
                 '''
             }
@@ -119,28 +118,26 @@ pipeline {
             steps {
                 sh '''
                     mkdir -p migrations
-
-                    ./atlas migrate hash \
-                        --dir ${MIGRATIONS_DIR}
+                    ./atlas migrate hash --dir ${MIGRATIONS_DIR}
                 '''
             }
         }
 
         stage('Generate Migration From schema.hcl') {
-    steps {
-        sh '''
-            ./atlas migrate diff auto_schema_update \
-            --dir ${MIGRATIONS_DIR} \
-            --to ${SCHEMA_FILE} \
-            --dev-url "docker://postgres/16/dev"
-        '''
-    }
-}
+            steps {
+                sh '''
+                    ./atlas migrate diff auto_schema_update \
+                        --dir ${MIGRATIONS_DIR} \
+                        --to ${SCHEMA_FILE} \
+                        --dev-url "${DB_URL}"
+                '''
+            }
+        }
+
         stage('Rebuild Atlas Hash') {
             steps {
                 sh '''
-                    ./atlas migrate hash \
-                        --dir ${MIGRATIONS_DIR}
+                    ./atlas migrate hash --dir ${MIGRATIONS_DIR}
                 '''
             }
         }
