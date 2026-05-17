@@ -11,6 +11,15 @@ table "users" {
     type = varchar(100)
   }
 
+  column "address" {
+    type = varchar(255)
+    null = true
+  }
+
+  column "location" {
+    type = varchar(100)
+    null = true
+  }
 
   primary_key {
     columns = [column.id]
