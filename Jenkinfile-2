@@ -127,16 +127,15 @@ pipeline {
         }
 
         stage('Generate Migration From schema.hcl') {
-            steps {
-                sh '''
-                    ./atlas migrate diff auto_schema_update \
-                        --dir ${MIGRATIONS_DIR} \
-                        --to ${SCHEMA_FILE} \
-                        --dev-url "${DB_URL}"
-                '''
-            }
-        }
-
+    steps {
+        sh '''
+            ./atlas migrate diff auto_schema_update \
+            --dir ${MIGRATIONS_DIR} \
+            --to ${SCHEMA_FILE} \
+            --dev-url "docker://postgres/16/dev"
+        '''
+    }
+}
         stage('Rebuild Atlas Hash') {
             steps {
                 sh '''
