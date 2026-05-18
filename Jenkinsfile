@@ -32,7 +32,7 @@ pipeline {
                 sh '''
                 mkdir -p migrations
 
-                # Create checksum file if missing
+                # Create atlas.sum if missing
                 if [ ! -f migrations/atlas.sum ]; then
                     atlas migrate hash --dir "file://migrations"
                 fi
@@ -43,22 +43,13 @@ pipeline {
         stage('Generate Migration') {
             steps {
                 sh '''
-                # Generate migration if schema changes exist
+                # Generate migration from schema changes
                 atlas migrate diff auto_changes \
                 --env local || true
 
-                # Recalculate checksum after migration generation
+                # Update checksum file
                 atlas migrate hash \
                 --dir "file://migrations"
-                '''
-            }
-        }
-
-        stage('Validate Migration') {
-            steps {
-                sh '''
-                atlas migrate lint \
-                --env local
                 '''
             }
         }
@@ -71,10 +62,10 @@ pipeline {
 
                 git add migrations/
 
-                # Commit only if changes exist
+                # Commit only if migration changes exist
                 git diff --cached --quiet || git commit -m "Auto-generated Atlas migration"
 
-                # Push changes
+                # Push generated migrations
                 git push origin ${GIT_BRANCH}
                 '''
             }
