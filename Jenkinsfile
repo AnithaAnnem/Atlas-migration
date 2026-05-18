@@ -85,8 +85,7 @@ pipeline {
             steps {
                 sh '''
                 atlas migrate apply \
-                --env local \
-                --auto-approve
+                --env local 
                 '''
             }
         }
