@@ -56,19 +56,28 @@ pipeline {
 
         stage('Commit Migration Files') {
             steps {
-                sh '''
-                git checkout ${GIT_BRANCH}
-                git config --global user.email "jenkins@local"
-                git config --global user.name "Jenkins"
 
-                git add migrations/
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-creds',
+                    usernameVariable: 'GIT_USERNAME',
+                    passwordVariable: 'GIT_PASSWORD'
+                )]) {
 
-                # Commit only if migration changes exist
-                git diff --cached --quiet || git commit -m "Auto-generated Atlas migration"
+                    sh '''
+                    git checkout ${GIT_BRANCH}
 
-                # Push generated migrations
-                git push origin ${GIT_BRANCH}
-                '''
+                    git config --global user.email "jenkins@local"
+                    git config --global user.name "Jenkins"
+
+                    git add migrations/
+
+                    # Commit only if changes exist
+                    git diff --cached --quiet || git commit -m "Auto-generated Atlas migration"
+
+                    # Push generated migrations to GitHub
+                    git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/AnithaAnnem/Atlas-migration.git ${GIT_BRANCH}
+                    '''
+                }
             }
         }
 
