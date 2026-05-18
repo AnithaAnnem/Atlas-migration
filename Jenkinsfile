@@ -7,6 +7,12 @@ pipeline {
 
     stages {
 
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -26,6 +32,7 @@ pipeline {
                 sh '''
                 mkdir -p migrations
 
+                # Create checksum file if missing
                 if [ ! -f migrations/atlas.sum ]; then
                     atlas migrate hash --dir "file://migrations"
                 fi
@@ -36,8 +43,13 @@ pipeline {
         stage('Generate Migration') {
             steps {
                 sh '''
+                # Generate migration if schema changes exist
                 atlas migrate diff auto_changes \
-                --env local
+                --env local || true
+
+                # Recalculate checksum after migration generation
+                atlas migrate hash \
+                --dir "file://migrations"
                 '''
             }
         }
@@ -59,8 +71,10 @@ pipeline {
 
                 git add migrations/
 
+                # Commit only if changes exist
                 git diff --cached --quiet || git commit -m "Auto-generated Atlas migration"
 
+                # Push changes
                 git push origin ${GIT_BRANCH}
                 '''
             }
