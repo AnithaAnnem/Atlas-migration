@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_BRANCH = "main"
+        GIT_BRANCH = "atlas"
     }
 
     stages {
