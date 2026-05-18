@@ -11,6 +11,11 @@ table "users" {
     type = varchar(100)
   }
 
+  column "email" {
+    type = varchar(255)
+    null = true
+  }
+
   primary_key {
     columns = [column.id]
   }
