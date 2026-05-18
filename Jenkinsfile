@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = "atlas"
+        GIT_BRANCH = "main"
     }
 
     stages {
@@ -17,6 +17,18 @@ pipeline {
             steps {
                 sh '''
                 atlas version
+                '''
+            }
+        }
+
+        stage('Initialize Migration Directory') {
+            steps {
+                sh '''
+                mkdir -p migrations
+
+                if [ ! -f migrations/atlas.sum ]; then
+                    atlas migrate hash --dir "file://migrations"
+                fi
                 '''
             }
         }
@@ -49,7 +61,7 @@ pipeline {
 
                 git diff --cached --quiet || git commit -m "Auto-generated Atlas migration"
 
-                git push origin ${GIT_REPO}
+                git push origin ${GIT_BRANCH}
                 '''
             }
         }
