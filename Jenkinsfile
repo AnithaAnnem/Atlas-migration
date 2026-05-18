@@ -57,6 +57,7 @@ pipeline {
         stage('Commit Migration Files') {
             steps {
                 sh '''
+                git checkout ${GIT_BRANCH}
                 git config --global user.email "jenkins@local"
                 git config --global user.name "Jenkins"
 
